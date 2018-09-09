@@ -55,17 +55,7 @@ macro_rules! impl_mask_ty {
             fn partial_cmp(
                 &self, other: &Self,
             ) -> Option<crate::cmp::Ordering> {
-                use crate::cmp::Ordering;
-                if self == other {
-                    Some(Ordering::Equal)
-                } else if self.0 > other.0 {
-                    // Note:
-                    //  * false = 0_i
-                    //  * true == !0_i == -1_i
-                    Some(Ordering::Less)
-                } else {
-                    Some(Ordering::Greater)
-                }
+                Some(self.cmp(other))
             }
 
             #[inline]
@@ -89,9 +79,16 @@ macro_rules! impl_mask_ty {
         impl Ord for $id {
             #[inline]
             fn cmp(&self, other: &Self) -> crate::cmp::Ordering {
-                match self.partial_cmp(other) {
-                    Some(x) => x,
-                    None => unsafe { crate::hint::unreachable_unchecked() },
+                use crate::cmp::Ordering;
+                if self == other {
+                    Ordering::Equal
+                } else if self.0 > other.0 {
+                    // Note:
+                    //  * false = 0_i
+                    //  * true == !0_i == -1_i
+                    Ordering::Less
+                } else {
+                    Ordering::Greater
                 }
             }
         }
